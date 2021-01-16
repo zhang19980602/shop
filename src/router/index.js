@@ -34,6 +34,11 @@ export default new Router({
           path: '/pinpai',
           component: () => import(/* webpackChunkName: "dashboard" */ '../components/shop/PinPai.vue'),
           meta: { title: '品牌管理' }
+        },
+        {
+          path: '/shuxing',
+          component: () => import(/* webpackChunkName: "dashboard" */ '../components/shop/ShuXing.vue'),
+          meta: { title: '属性管理' }
         }
       ]
     }
