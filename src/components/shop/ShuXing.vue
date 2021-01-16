@@ -9,6 +9,7 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="queryShuXing(1)">查询</el-button>
+        <el-button type="success" @click="addFormFlag=true">新增</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -59,21 +60,93 @@
         layout="total, sizes, prev, pager, next, jumper"
         :total="count">
       </el-pagination>
-    </div></div>
+    </div>
+    <!--新增模板-->
+    <div>
+      <!--新增模板-->
+      <el-dialog title="属性新增信息" :visible.sync="addFormFlag">
+        <el-form :model="addForm" ref="addForm"  label-width="80px">
+          <el-form-item label="英文名称" prop="name">
+            <el-input v-model="addForm.name" autocomplete="off" ></el-input>
+          </el-form-item>
+          <el-form-item label="中文名称" prop="nameCH">
+            <el-input v-model="addForm.nameCH" autocomplete="off" ></el-input>
+          </el-form-item>
+          <el-form-item label="属性类型" prop="typeId">
+            <el-select v-model="addForm.typeId" placeholder="请选择">
+              <el-option
+                v-for="item in bandData"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="类型" prop="type">
+            <el-select v-model="addForm.type" placeholder="请选择">
+              <el-option
+                v-for="item in leixngData"
+                :key="item.type"
+                :label="item.name"
+                :value="item.type">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="是否SKU" prop="isSKU">
+            <el-switch
+              v-model="addForm.isSKU"
+              active-color="#13ce66"
+              active-value="1"
+              inactive-value="0">
+            </el-switch>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="add">确 定</el-button>
+          <el-button @click="addFormFlag = false">取 消</el-button>
+        </div>
+      </el-dialog>
+    </div>
+
+
+  </div>
 </template>
 
 <script>
     export default {
       data(){return{
+
         searchForm:{name:""},//条件查询数据
         //数据展示:
         shuxingData:[],
+        //类型的数据
         typeData:[],
+        leixngData:[{type:0,name:"下拉框"},{type:1,name:"单选框"},{type:2,name:"复选框"},{type:3,name:"输入框"}],
         count:0,
         sizes:[2,3,5,10],
         size:2,
+        /* 新增模块的数据  */
+        bandData:[],
+        addFormFlag:false,
+        addForm:{
+          id:"",
+          name:"",
+          nameCH:"",
+          typeId:"",
+          type:"",
+          isSKU:""
+        },
       }
       },methods:{
+        add(){
+          console.log(this.addForm)
+          var add=this.$qs.stringify(this.addForm)
+          this.$axios.post("http://192.168.1.43:8080/api/shuxing/add?"+add).then(res=>{
+            // 把请求的数据  赋给全局
+            this.addFormFlag=false;
+            this.queryShuXing(1);
+          }).catch(err=>console.log(err));
+        },
         handleCurrentChange(page){
           this.queryShuXing(page)
         },
@@ -92,10 +165,8 @@
             var searchStr=this.$qs.stringify(this.searchForm);
             console.log(searchStr);
             var url="http://192.168.1.43:8080/api/shuxing/queryAll?limit="+this.size+"&page="+page+"&"+searchStr;
-            console.log(url);
             //发起请求
             this.$axios.get(url).then(res=>{
-              console.log(res)
               this.shuxingData=res.data.data;
               this.count=res.data.count;
             }).catch(err=>console.log(err));
@@ -103,8 +174,39 @@
         queryType(){
           this.$axios.get("http://192.168.1.43:8080/api/type/getData").then(res=>{
             this.typeData=res.data.data;
-            console.log(res)
+            for (let i = 0; i <res.data.data.length ; i++) {
+              if(res.data.data[i].pid==0){
+                this.diguiNode(res.data.data[i]);
+                break;
+              }
+            }
           }).catch(err=>console.log(err));
+        },
+        diguiNode:function (node) {
+          // 判断是否为父节点
+          var bf=this.isParent(node);
+          console.log(bf)
+          if(bf==true){
+            for (let i = 0; i <this.typeData.length ; i++) {
+              //判断是否为当前节点的子节点
+              if(node.id==this.typeData[i].pid){
+                this.diguiNode(this.typeData[i]);
+              }
+            }
+          }
+          if(bf==false){
+           console.log(node)
+            this.bandData.push(node)
+          }
+          },
+        isParent:function(node){// 判断是否为父节点  pid 有没有指向当前id
+          for (let i = 0; i <this.typeData.length ; i++) {
+            if(node.id==this.typeData[i].pid){
+              console.log(1)
+              return true;
+            }
+          }
+          return false;
         }
       },
       created:function () {
