@@ -44,6 +44,7 @@
         <el-table-column
           prop="isSKU"
           label="SKU"
+          :formatter="SKU"
         >
         </el-table-column>
 
@@ -206,7 +207,16 @@
       }
       },methods:{
         //修改
-        update(){},
+        update(){
+          console.log(this.updateForm)
+          var update=this.$qs.stringify(this.updateForm)
+          console.log(update)
+          this.$axios.post("http://192.168.1.43:8080/api/shuxing/update?"+update).then(res=>{
+            // 把请求的数据  赋给全局
+            this.updateFormFlag=false;
+            this.queryShuXing(1);
+          }).catch(err=>console.log(err));
+        },
         //回显
         toUpdateshuxing(id){
           this.updateFormFlag=true;
@@ -257,6 +267,9 @@
             if(value==this.typeData[i].id)
             {return this.typeData[i].name}
           }
+        },
+        SKU(row,column,value,index){
+          return value==1?"是":"否"
         },
           queryShuXing(page){
             //参数格式化
