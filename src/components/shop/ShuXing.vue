@@ -45,8 +45,8 @@
           prop="id"
           label="操作">
           <template slot-scope="scope">
-            <!--<el-button type="primary" icon="el-icon-edit"   @click="toUpdatePinpai(scope.row.id)"></el-button>
-            <el-button type="danger" icon="el-icon-delete"  @click="deletePinpai(scope.row.id)"></el-button>-->
+            <!--<el-button type="primary" icon="el-icon-edit"   @click="toUpdatePinpai(scope.row.id)"></el-button>-->
+            <el-button type="danger" icon="el-icon-delete"  @click="deleteShuxing(scope.row.id)"></el-button>
           </template>
         </el-table-column>
 
@@ -138,6 +138,28 @@
         },
       }
       },methods:{
+        deleteShuxing(id){
+          this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.$axios.post("http://192.168.1.43:8080/api/shuxing/delete?id="+id+"").then(res=>{
+              // 把请求的数据  赋给全局
+              this.$message({
+                type: 'success',
+                message: '删除成功!'
+              });
+              this.queryShuXing(1);
+            }).catch(err=>console.log(err));
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            });
+          });
+        },
+        //新增
         add(){
           console.log(this.addForm)
           var add=this.$qs.stringify(this.addForm)
