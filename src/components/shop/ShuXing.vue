@@ -42,10 +42,16 @@
         </el-table-column>
 
         <el-table-column
+          prop="isSKU"
+          label="SKU"
+        >
+        </el-table-column>
+
+        <el-table-column
           prop="id"
           label="操作">
           <template slot-scope="scope">
-            <!--<el-button type="primary" icon="el-icon-edit"   @click="toUpdatePinpai(scope.row.id)"></el-button>-->
+            <el-button type="primary" icon="el-icon-edit"   @click="toUpdateshuxing(scope.row.id)"></el-button>
             <el-button type="danger" icon="el-icon-delete"  @click="deleteShuxing(scope.row.id)"></el-button>
           </template>
         </el-table-column>
@@ -92,18 +98,69 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="是否SKU" prop="isSKU">
+          <el-form-item label="SKU" prop="isSKU">
             <el-switch
               v-model="addForm.isSKU"
+              active-text="是"
               active-color="#13ce66"
-              active-value="1"
-              inactive-value="0">
+              :active-value="1"
+              inactive-text="否"
+              :inactive-value="0">
             </el-switch>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button type="primary" @click="add">确 定</el-button>
           <el-button @click="addFormFlag = false">取 消</el-button>
+        </div>
+      </el-dialog>
+    </div>
+
+    <!--修改的模板-->
+    <div>
+      <!--修改的模板-->
+      <el-dialog title="属性修改信息" :visible.sync="updateFormFlag">
+        <el-form :model="updateForm" ref="addForm"  label-width="80px">
+          <el-form-item label="英文名称" prop="name">
+            <el-input v-model="updateForm.name" autocomplete="off" ></el-input>
+          </el-form-item>
+          <el-form-item label="中文名称" prop="nameCH">
+            <el-input v-model="updateForm.nameCH" autocomplete="off" ></el-input>
+          </el-form-item>
+          <el-form-item label="属性类型" prop="typeId">
+            <el-select v-model="updateForm.typeId" placeholder="请选择">
+              <el-option
+                v-for="item in bandData"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="类型" prop="type">
+            <el-select v-model="updateForm.type" placeholder="请选择">
+              <el-option
+                v-for="item in leixngData"
+                :key="item.type"
+                :label="item.name"
+                :value="item.type">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="SKU" prop="isSKU">
+            <el-switch
+              active-text="是"
+              v-model="updateForm.isSKU"
+              active-color="#13ce66"
+              :active-value="1"
+              inactive-text="否"
+              :inactive-value="0">
+            </el-switch>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="update">确 定</el-button>
+          <el-button @click="updateFormFlag = false">取 消</el-button>
         </div>
       </el-dialog>
     </div>
@@ -136,8 +193,27 @@
           type:"",
           isSKU:""
         },
+        //修改的模板
+        updateFormFlag:false,
+        updateForm:{
+          id:"",
+          name:"",
+          nameCH:"",
+          typeId:"",
+          type:"",
+          isSKU:""
+        },
       }
       },methods:{
+        //修改
+        update(){},
+        //回显
+        toUpdateshuxing(id){
+          this.updateFormFlag=true;
+          this.$axios.get("http://192.168.1.43:8080/api/shuxing/queryById?id="+id+"").then(res=>{
+            this.updateForm=res.data.data;
+          }).catch(err=>console.log(err));
+        },//逻辑删除
         deleteShuxing(id){
           this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
             confirmButtonText: '确定',
