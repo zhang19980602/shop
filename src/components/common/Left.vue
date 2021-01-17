@@ -63,7 +63,7 @@
           },
 
           {
-            icon: 'el-icon-open',
+            icon: 'el-icon-refrigerator',
             index: '3',
             title: '表单相关',
             subs: [

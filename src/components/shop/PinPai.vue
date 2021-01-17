@@ -9,7 +9,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="queryPinpaiData(1)">查询</el-button>
-          <el-button type="success" @click="addFormFlag=true">新增</el-button>
+          <el-button type="success" @click="addFormFlag1()">新增</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -160,7 +160,7 @@
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button type="primary" @click="update1">确 定</el-button>
-          <el-button @click="addFormFlag = false">取 消</el-button>
+          <el-button @click="updateFormFlag = false">取 消</el-button>
         </div>
       </el-dialog>
     </div>
@@ -202,6 +202,10 @@
         }
       },
     methods:{
+      addFormFlag1(){
+        this.addFormFlag=true;
+        this.addForm=[];
+      },
       handleCurrentChange(page){
         console.log(page);
         this.queryPinpaiData(page);

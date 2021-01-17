@@ -1,5 +1,5 @@
 <template>
-  <div><h1>属性展示</h1>
+  <div><h1 align="center">属性展示</h1>
     <div id="searchDiv" align="center">
 
     <el-form :inline="true" :model="searchForm" class="demo-form-inline">
