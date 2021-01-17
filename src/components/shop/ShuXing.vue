@@ -305,7 +305,27 @@
             this.updateValueForm=res.data.data;
           }).catch(err=>console.log(err));
         },
-        deleteShuxingValue(id){},
+        deleteShuxingValue(id){
+          this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.$axios.post("http://192.168.1.43:8080/api/shuxing_value/delete?id="+id+"").then(res=>{
+              // 把请求的数据  赋给全局
+              this.$message({
+                type: 'success',
+                message: '删除成功!'
+              });
+              this.toShuXing_value(this.attId);
+            }).catch(err=>console.log(err));
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            });
+          });
+        },
         addValue(){
           this.addValueForm.attId=this.attId;
           var add=this.$qs.stringify(this.addValueForm)
