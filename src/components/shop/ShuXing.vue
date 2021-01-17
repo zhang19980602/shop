@@ -1,9 +1,7 @@
 <template>
   <div><h1 align="center">属性展示</h1>
     <div id="searchDiv" align="center">
-
     <el-form :inline="true" :model="searchForm" class="demo-form-inline">
-
       <el-form-item label="名称">
         <el-input v-model="searchForm.name" placeholder="名称"></el-input>
       </el-form-item>
@@ -54,6 +52,7 @@
           <template slot-scope="scope">
             <el-button type="primary" icon="el-icon-edit"   @click="toUpdateshuxing(scope.row.id)"></el-button>
             <el-button type="danger" icon="el-icon-delete"  @click="deleteShuxing(scope.row.id)"></el-button>
+            <el-button type="primary" @click="toShuXing_value(scope.row.id)" icon="el-icon-zoom-in"></el-button>
           </template>
         </el-table-column>
 
@@ -166,8 +165,35 @@
       </el-dialog>
     </div>
 
+    <!--属性值的展示-->
+    <div>
+      <el-button type="primary" @click="addValueFormFlag=true">新增</el-button>
+      <el-dialog title="属性值展示" :visible.sync="shuxingFlag">
+        <el-table
+          :data="shuxingForm"
+          style="width: 100%">
+          <el-table-column
+            prop="id"
+            label="序号"
+            width="180">
+          </el-table-column>
+          <el-table-column
+            prop="value"
+            label="属性英文名称"
+            width="180">
+          </el-table-column>
+
+          <el-table-column
+            prop="valueCH"
+            label="属性中文名字"
+          >
+          </el-table-column>
+        </el-table>
+      </el-dialog>
+    </div>
 
   </div>
+
 </template>
 
 <script>
@@ -204,8 +230,20 @@
           type:"",
           isSKU:""
         },
+        //属性值展示
+        shuxingFlag:false,
+        shuxingForm:{
+        },
+        //属性值的新增
+        addValueFormFlag:false
       }
       },methods:{
+        toShuXing_value(id){
+          this.$axios.get("http://192.168.1.43:8080/api/shuxing_value/queryAll?pid="+id+"").then(res=>{
+            this.shuxingForm=res.data.data;
+          }).catch(err=>console.log(err));
+          this.shuxingFlag=true;
+        },
         //修改
         update(){
           console.log(this.updateForm)
@@ -287,6 +325,7 @@
             this.typeData=res.data.data;
             for (let i = 0; i <res.data.data.length ; i++) {
               if(res.data.data[i].pid==0){
+                this.arr3=res.data.data[i];
                 this.diguiNode(res.data.data[i]);
                 break;
               }
@@ -300,14 +339,15 @@
             for (let i = 0; i <this.typeData.length ; i++) {
               //判断是否为当前节点的子节点
               if(node.id==this.typeData[i].pid){
-                this.diguiNode(this.typeData[i]);
+               this.diguiNode(this.typeData[i]);
               }
             }
           }
           if(bf==false){
+            console.log(false)
             for (let i = 0; i <this.typeData.length ; i++) {
               if(node.pid==this.typeData[i].id){
-                  this.arr='{"id":'+'"'+node.id+'"'+',"name":'+'"分类/'+this.typeData[i].name+"/"+node.name+'"'+'}';
+                this.arr='{"id":'+node.id+',"name":'+'"分类/'+this.typeData[i].name+"/"+node.name+'"'+'}';
                 this.bandData.push(JSON.parse(this.arr))
               }
             }
@@ -316,7 +356,6 @@
         isParent:function(node){// 判断是否为父节点  pid 有没有指向当前id
           for (let i = 0; i <this.typeData.length ; i++) {
             if(node.id==this.typeData[i].pid){
-              console.log(1)
               return true;
             }
           }
