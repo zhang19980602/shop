@@ -167,7 +167,6 @@
 
     <!--属性值的展示-->
     <div>
-      <el-button type="primary" @click="addValueFormFlag=true">新增</el-button>
       <el-dialog title="属性值展示" :visible.sync="shuxingFlag">
         <el-table
           :data="shuxingForm"
@@ -188,10 +187,55 @@
             label="属性中文名字"
           >
           </el-table-column>
+          <el-table-column
+            prop="id"
+            label="操作">
+            <template slot-scope="scope">
+              <el-button type="primary" icon="el-icon-edit"   @click="toUpdateshuxingValue(scope.row.id)"></el-button>
+              <el-button type="danger" icon="el-icon-delete"  @click="deleteShuxingValue(scope.row.id)"></el-button>
+            </template>
+          </el-table-column>
         </el-table>
+        <el-button type="primary" @click="addValueFormFlag=true">新增</el-button>
       </el-dialog>
     </div>
 
+    <!--属性值的的模板-->
+    <div>
+      <!--属性值的的模板-->
+      <el-dialog title="属性值新增信息" :visible.sync="addValueFormFlag">
+        <el-form :model="addValueForm"    label-width="80px">
+          <el-form-item label="英文名称" prop="value">
+            <el-input v-model="addValueForm.value" autocomplete="off" ></el-input>
+          </el-form-item>
+          <el-form-item label="中文名称" prop="valueCH">
+            <el-input v-model="addValueForm.valueCH" autocomplete="off" ></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="addValue">确 定</el-button>
+          <el-button @click="addValueFormFlag = false">取 消</el-button>
+        </div>
+      </el-dialog>
+    </div>
+    <!--属性值修改模板-->
+    <div>
+      <!--属性值的的模板-->
+      <el-dialog title="属性值修改信息" :visible.sync="updateValueFormFlag">
+        <el-form :model="updateValueForm"    label-width="80px">
+          <el-form-item label="英文名称" prop="value">
+            <el-input v-model="updateValueForm.value" autocomplete="off" ></el-input>
+          </el-form-item>
+          <el-form-item label="中文名称" prop="valueCH">
+            <el-input v-model="updateValueForm.valueCH" autocomplete="off" ></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="updateValue">确 定</el-button>
+          <el-button @click="updateValueFormFlag = false">取 消</el-button>
+        </div>
+      </el-dialog>
+    </div>
   </div>
 
 </template>
@@ -231,14 +275,50 @@
           isSKU:""
         },
         //属性值展示
+        attId:"",
         shuxingFlag:false,
-        shuxingForm:{
-        },
+        shuxingForm:[]
+        ,
         //属性值的新增
-        addValueFormFlag:false
+        addValueFormFlag:false,
+        addValueForm:{
+          value:"",
+          valueCH:"",
+        },
+        //属性值的修改
+        updateValueFormFlag:false,
+        updateValueForm:{
+        }
       }
       },methods:{
+        updateValue(){
+          var update=this.$qs.stringify(this.updateValueForm)
+          this.$axios.post("http://192.168.1.43:8080/api/shuxing_value/update?"+update).then(res=>{
+            // 把请求的数据  赋给全局
+            this.updateValueFormFlag=false;
+            this.toShuXing_value(this.attId);
+          }).catch(err=>console.log(err));
+        },
+        toUpdateshuxingValue(id){
+          this.updateValueFormFlag=true;
+          this.$axios.get("http://192.168.1.43:8080/api/shuxing_value/queryById?id="+id+"").then(res=>{
+            this.updateValueForm=res.data.data;
+          }).catch(err=>console.log(err));
+        },
+        deleteShuxingValue(id){},
+        addValue(){
+          this.addValueForm.attId=this.attId;
+          var add=this.$qs.stringify(this.addValueForm)
+          console.log(add)
+         this.$axios.post("http://192.168.1.43:8080/api/shuxing_value/add?"+add).then(res=>{
+            // 把请求的数据  赋给全局
+            this.addValueFormFlag=false;
+            this.toShuXing_value(this.attId);
+          }).catch(err=>console.log(err));
+        },
+        //属性值的展示
         toShuXing_value(id){
+          this.attId=id;
           this.$axios.get("http://192.168.1.43:8080/api/shuxing_value/queryAll?pid="+id+"").then(res=>{
             this.shuxingForm=res.data.data;
           }).catch(err=>console.log(err));
