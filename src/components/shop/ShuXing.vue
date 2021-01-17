@@ -173,7 +173,7 @@
 <script>
     export default {
       data(){return{
-
+         arr:"",
         searchForm:{name:""},//条件查询数据
         //数据展示:
         shuxingData:[],
@@ -296,7 +296,6 @@
         diguiNode:function (node) {
           // 判断是否为父节点
           var bf=this.isParent(node);
-          console.log(bf)
           if(bf==true){
             for (let i = 0; i <this.typeData.length ; i++) {
               //判断是否为当前节点的子节点
@@ -306,8 +305,12 @@
             }
           }
           if(bf==false){
-           console.log(node)
-            this.bandData.push(node)
+            for (let i = 0; i <this.typeData.length ; i++) {
+              if(node.pid==this.typeData[i].id){
+                  this.arr='{"id":'+'"'+node.id+'"'+',"name":'+'"分类/'+this.typeData[i].name+"/"+node.name+'"'+'}';
+                this.bandData.push(JSON.parse(this.arr))
+              }
+            }
           }
           },
         isParent:function(node){// 判断是否为父节点  pid 有没有指向当前id
