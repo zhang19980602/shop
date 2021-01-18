@@ -202,11 +202,11 @@
       </el-dialog>
     </div>
 
-    <!--属性值的的模板-->
+    <!--属性值的新增的模板-->
     <div>
-      <!--属性值的的模板-->
+      <!--属性值的新增的模板-->
       <el-dialog title="属性值新增信息" :visible.sync="addValueFormFlag">
-        <el-form :model="addValueForm"    label-width="80px">
+        <el-form :model="addValueForm"  :rules="valuerules" ref="addValueForm"  label-width="80px">
           <el-form-item label="英文名称" prop="value">
             <el-input v-model="addValueForm.value" autocomplete="off" ></el-input>
           </el-form-item>
@@ -224,7 +224,7 @@
     <div>
       <!--属性值的的模板-->
       <el-dialog title="属性值修改信息" :visible.sync="updateValueFormFlag">
-        <el-form :model="updateValueForm"    label-width="80px">
+        <el-form :model="updateValueForm" :rules="valuerules" ref="updateValueForm"  label-width="80px">
           <el-form-item label="英文名称" prop="value">
             <el-input v-model="updateValueForm.value" autocomplete="off" ></el-input>
           </el-form-item>
@@ -244,7 +244,19 @@
 
 <script>
     export default {
-      data(){return{
+      data(){
+        var checkname = (rule, value, callback) => {
+          if (!value) {
+            return callback(new Error('属性名不能为空'));
+          }
+          if(/^[\u4e00-\u9fa5]+$/i.test(value)){
+            callback();
+          }else{
+            callback(new Error('只能输入中文'));
+          }
+        };
+
+        return{
          arr:"",
         searchForm:{name:""},//条件查询数据
         //数据展示:
@@ -287,6 +299,15 @@
           value:"",
           valueCH:"",
         },
+        valuerules:{
+          valueCH: [
+            { required: true, message: '请输入属性值的名称', trigger: 'blur' },
+            { max: 10, message: '长度不能超过 10 个字符', trigger: 'blur' },
+            { validator:checkname,trigger: 'blur' }
+          ],
+          value: [
+            { required: true, message: '请输入属性值', trigger: 'change' }
+          ]},
         //属性值的修改
         updateValueFormFlag:false,
         updateValueForm:{
@@ -295,11 +316,17 @@
       },methods:{
         updateValue(){
           var update=this.$qs.stringify(this.updateValueForm)
+          this.$refs["updateValueForm"].validate((valid) => {
+              if (valid) {
           this.$axios.post("http://192.168.1.43:8080/api/shuxing_value/update?"+update).then(res=>{
             // 把请求的数据  赋给全局
             this.updateValueFormFlag=false;
             this.toShuXing_value1(this.attId);
           }).catch(err=>console.log(err));
+              } else {
+                return false;
+              }
+          })
         },
         toUpdateshuxingValue(id){
           this.updateValueFormFlag=true;
@@ -331,12 +358,17 @@
         addValue(){
           this.addValueForm.attId=this.attId;
           var add=this.$qs.stringify(this.addValueForm)
-          console.log(add)
+          this.$refs["addValueForm"].validate((valid) => {
+              if (valid) {
          this.$axios.post("http://192.168.1.43:8080/api/shuxing_value/add?"+add).then(res=>{
             // 把请求的数据  赋给全局
             this.addValueFormFlag=false;
             this.toShuXing_value1(this.attId);
           }).catch(err=>console.log(err));
+              } else {
+                return false;
+              }
+          })
         },
         //属性值的展示
         toShuXing_value(row){
