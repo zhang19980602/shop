@@ -68,6 +68,14 @@
             title: '表单相关',
             subs: [
               {
+                index: 'shop',
+                title: '商品管理'
+              },
+              {
+                index: 'shopadd',
+                title: '商品新增'
+              },
+              {
                 index: 'type',
                 title: '类目管理'
               },
