@@ -19,7 +19,7 @@
         <el-table-column
           prop="id"
           label="序号"
-          width="180">
+          width="100">
         </el-table-column>
         <el-table-column
           prop="name"
@@ -40,6 +40,12 @@
         </el-table-column>
 
         <el-table-column
+          prop="type"
+          label="选项"
+          :formatter="formaTypeId1">
+        </el-table-column>
+
+        <el-table-column
           prop="isSKU"
           label="SKU"
           :formatter="SKU"
@@ -52,7 +58,7 @@
           <template slot-scope="scope">
             <el-button type="primary" icon="el-icon-edit"   @click="toUpdateshuxing(scope.row.id)"></el-button>
             <el-button type="danger" icon="el-icon-delete"  @click="deleteShuxing(scope.row.id)"></el-button>
-            <el-button type="primary" @click="toShuXing_value(scope.row.id)" icon="el-icon-zoom-in"></el-button>
+            <el-button v-if="scope.row.type!=3" type="primary" @click="toShuXing_value(scope.row)" icon="el-icon-thumb"></el-button>
           </template>
         </el-table-column>
 
@@ -89,14 +95,12 @@
             </el-select>
           </el-form-item>
           <el-form-item label="类型" prop="type">
-            <el-select v-model="addForm.type" placeholder="请选择">
-              <el-option
-                v-for="item in leixngData"
-                :key="item.type"
-                :label="item.name"
-                :value="item.type">
-              </el-option>
-            </el-select>
+            <el-radio-group v-model="addForm.type">
+              <el-radio :label="0">下拉框</el-radio>
+              <el-radio :label="1">单选框</el-radio>
+              <el-radio :label="2">复选框</el-radio>
+              <el-radio :label="3">输入框</el-radio>
+            </el-radio-group>
           </el-form-item>
           <el-form-item label="SKU" prop="isSKU">
             <el-switch
@@ -138,14 +142,12 @@
             </el-select>
           </el-form-item>
           <el-form-item label="类型" prop="type">
-            <el-select v-model="updateForm.type" placeholder="请选择">
-              <el-option
-                v-for="item in leixngData"
-                :key="item.type"
-                :label="item.name"
-                :value="item.type">
-              </el-option>
-            </el-select>
+            <el-radio-group v-model="updateForm.type">
+              <el-radio :label="0">下拉框</el-radio>
+              <el-radio :label="1">单选框</el-radio>
+              <el-radio :label="2">复选框</el-radio>
+              <el-radio :label="3">输入框</el-radio>
+            </el-radio-group>
           </el-form-item>
           <el-form-item label="SKU" prop="isSKU">
             <el-switch
@@ -167,7 +169,8 @@
 
     <!--属性值的展示-->
     <div>
-      <el-dialog title="属性值展示" :visible.sync="shuxingFlag">
+      <el-dialog :title="valueName" :visible.sync="shuxingFlag">
+        <el-button type="primary" @click="addValueFormFlag=true">新增</el-button>
         <el-table
           :data="shuxingForm"
           style="width: 100%">
@@ -196,7 +199,6 @@
             </template>
           </el-table-column>
         </el-table>
-        <el-button type="primary" @click="addValueFormFlag=true">新增</el-button>
       </el-dialog>
     </div>
 
@@ -249,10 +251,9 @@
         shuxingData:[],
         //类型的数据
         typeData:[],
-        leixngData:[{type:0,name:"下拉框"},{type:1,name:"单选框"},{type:2,name:"复选框"},{type:3,name:"输入框"}],
         count:0,
         sizes:[2,3,5,10],
-        size:2,
+        size:10,
         /* 新增模块的数据  */
         bandData:[],
         addFormFlag:false,
@@ -279,6 +280,7 @@
         shuxingFlag:false,
         shuxingForm:[]
         ,
+        valueName:"",
         //属性值的新增
         addValueFormFlag:false,
         addValueForm:{
@@ -296,7 +298,7 @@
           this.$axios.post("http://192.168.1.43:8080/api/shuxing_value/update?"+update).then(res=>{
             // 把请求的数据  赋给全局
             this.updateValueFormFlag=false;
-            this.toShuXing_value(this.attId);
+            this.toShuXing_value1(this.attId);
           }).catch(err=>console.log(err));
         },
         toUpdateshuxingValue(id){
@@ -317,7 +319,7 @@
                 type: 'success',
                 message: '删除成功!'
               });
-              this.toShuXing_value(this.attId);
+              this.toShuXing_value1(this.attId);
             }).catch(err=>console.log(err));
           }).catch(() => {
             this.$message({
@@ -333,16 +335,24 @@
          this.$axios.post("http://192.168.1.43:8080/api/shuxing_value/add?"+add).then(res=>{
             // 把请求的数据  赋给全局
             this.addValueFormFlag=false;
-            this.toShuXing_value(this.attId);
+            this.toShuXing_value1(this.attId);
           }).catch(err=>console.log(err));
         },
         //属性值的展示
-        toShuXing_value(id){
-          this.attId=id;
-          this.$axios.get("http://192.168.1.43:8080/api/shuxing_value/queryAll?pid="+id+"").then(res=>{
+        toShuXing_value(row){
+          this.attId=row.id;
+          this.valueName=row.nameCH+"数据展示"
+          this.$axios.get("http://192.168.1.43:8080/api/shuxing_value/queryAll?pid="+row.id+"").then(res=>{
             this.shuxingForm=res.data.data;
           }).catch(err=>console.log(err));
           this.shuxingFlag=true;
+        },
+        toShuXing_value1(id){
+          this.attId=id;
+          this.shuxingFlag=true;
+          this.$axios.get("http://192.168.1.43:8080/api/shuxing_value/queryAll?pid="+id+"").then(res=>{
+            this.shuxingForm=res.data.data;
+          }).catch(err=>console.log(err));
         },
         //修改
         update(){
@@ -404,6 +414,20 @@
           for (let i = 0; i <this.typeData.length; i++) {
             if(value==this.typeData[i].id)
             {return this.typeData[i].name}
+          }
+        },
+        formaTypeId1(row,column,value,index){
+          if(value==0){
+            return "下拉框";
+          }
+          if(value==1){
+            return "单选框";
+          }
+          if(value==2){
+            return "复选框";
+          }
+          if(value==3){
+            return "输入框";
           }
         },
         SKU(row,column,value,index){
