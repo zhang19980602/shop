@@ -102,8 +102,8 @@
                 ]
               },
               {
-                index: 'upload',
-                title: '文件上传'
+                index: 'test11',
+                title: '测试'
               }
             ]
           },
