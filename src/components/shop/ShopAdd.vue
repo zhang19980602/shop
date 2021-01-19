@@ -61,65 +61,49 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="商品规格" >
-          <div v-for="shuxing in shuxingData1">
-            <div v-if="shuxing.type==0">
-              {{shuxing.nameCH}}
-                <el-select  placeholder="请选择活动区域">
-                  <el-option label="区域一" value="shanghai"></el-option>
-                  <el-option label="区域二" value="beijing"></el-option>
-                </el-select>
-            </div>
-          <div v-if="shuxing.type==1">
-              {{shuxing.nameCH}}
-              <el-radio-group >
-                <el-radio label="线上品牌商赞助"></el-radio>
-                <el-radio label="线下场地免费"></el-radio>
-              </el-radio-group>
-            </div>
-            <div v-if="shuxing.type==2">
-              {{shuxing.nameCH}}
-                <el-checkbox label="美食/餐厅线上活动" name="type"></el-checkbox>
-                <el-checkbox label="地推活动" name="type"></el-checkbox>
-                <el-checkbox label="线下主题活动" name="type"></el-checkbox>
-                <el-checkbox label="单纯品牌曝光" name="type"></el-checkbox>
-            </div>
-            <div v-if="shuxing.type==3">
-              {{shuxing.nameCH}}
-              <el-input ></el-input>
-            </div>
-            </div>
-        </el-form-item>
-        <el-form-item label="商品参数" >
-          <div v-for="shuxing in shuxingData2">
-            <div v-if="shuxing.type==0">
-              {{shuxing.nameCH}}
-              <el-select  placeholder="请选择活动区域">
-                <el-option label="区域一" value="shanghai"></el-option>
-                <el-option label="区域二" value="beijing"></el-option>
+
+        <el-form-item label="商品规格" v-if="shuxingData1.length>0">
+          <el-form-item v-for="a in  shuxingData1" :key="a.id" :label="a.nameCH">
+            <!--下拉框-->
+              <el-select  v-if="a.type==0" placeholder="请选择" v-model="xialai">
+                <el-option v-for="b in a.values" :key="b.id"  :label="b.valueCH" :value="b.id"></el-option>
               </el-select>
+          <!--单选框-->
+            <el-radio-group v-if="a.type==1" v-model="danxuan">
+              <el-radio-button v-for="b in a.values" :key="b.id" :label="b.valueCH"></el-radio-button>
+            </el-radio-group>
+          <!--复选框-->
+              <el-checkbox-group v-if="a.type==2" v-model="aa">
+                <el-checkbox-button v-for="b in a.values" :key="b.id" :label="b.valueCH" name="type"></el-checkbox-button>
+              </el-checkbox-group>
+          <!--输入框-->
+            <div v-if="a.type==3">
+              <el-input>11111</el-input>
             </div>
-            <div v-if="shuxing.type==1">
-              {{shuxing.nameCH}}
-              <el-radio-group >
-                <el-radio label="线上品牌商赞助"></el-radio>
-                <el-radio label="线下场地免费"></el-radio>
-              </el-radio-group>
-            </div>
-            <div v-if="shuxing.type==2">
-              {{shuxing.nameCH}}
-              <el-checkbox label="美食/餐厅线上活动" name="type"></el-checkbox>
-              <el-checkbox label="地推活动" name="type"></el-checkbox>
-              <el-checkbox label="线下主题活动" name="type"></el-checkbox>
-              <el-checkbox label="单纯品牌曝光" name="type"></el-checkbox>
-            </div>
-            <div v-if="shuxing.type==3">
-              {{shuxing.nameCH}}
-              <el-input ></el-input>
-            </div>
-          </div>
+          </el-form-item>
         </el-form-item>
 
+        <el-form-item label="商品参数" v-if="shuxingData2.length>0" >
+          <el-form-item v-for="a  in shuxingData2" :key="a.id" :label="a.nameCH">
+            <!--下拉框-->
+            <el-select  v-if="a.type==0" placeholder="请选择" v-model="xialai">
+              <el-option v-for="b in a.values" :key="b.id"  :label="b.valueCH" :value="b.id"></el-option>
+            </el-select>
+            <!--单选框-->
+            <el-radio-group v-if="a.type==1" v-model="danxuan">
+              <el-radio-button v-for="b in a.values" :key="b.id" :label="b.valueCH"></el-radio-button>
+            </el-radio-group>
+            <!--复选框-->
+            <el-checkbox-group v-if="a.type==2" v-model="aa">
+              <el-checkbox-button v-for="b in a.values" :key="b.id" :label="b.valueCH" name="type"></el-checkbox-button>
+            </el-checkbox-group>
+            <!--输入框-->
+            <div v-if="a.type==3">
+            <el-input ></el-input>
+          </div>
+
+          </el-form-item>
+        </el-form-item>
       </el-form>
     </div>
     <el-button style="margin-top: 12px;" v-if="active!=0" @click="after">上一步</el-button>
@@ -132,18 +116,25 @@
     data() {
       return {
         active: 0,
+        xialai:[],
+        aa:[],
+        danxuan:[],
         //商品新增信息
         shopAddFormflag:true,
         shopAddForm:{},
         bandData:[{id:1,name:"1"},{id:2,name:"2"}],
         //商品类型信息:
         shopTypeFormflag:false,
+        shopTypeForm1:{},
         shopTypeForm:{typeId:""},
         typeData:[{id:1,name:"上衣"},{id:2,name:"手机"}],
         typeData1:[],
         shuxingData:[],
+        //SKU
         shuxingData1:[],
-        shuxingData2:[]
+        //非SKU
+        shuxingData2:[],
+        shuxingzhiDate:[]
       };
     },
     methods: {
@@ -192,24 +183,39 @@
           this.shuxingData1=[];
           this.shuxingData2=[];
           this.shuxingData=res.data.data;
-          for (let i = 0; i <this.shuxingData.length ; i++) {
+          for (let i = 0; i <this.shuxingData.length; i++) {
              if(this.shuxingData[i].isSKU==1){
-               this.shuxingData1.push(this.shuxingData[i])
-             }else{
-               this.shuxingData2.push(this.shuxingData[i])
+               if(this.shuxingData[i].type!=3){
+                 this.$axios.get("http://192.168.1.43:8080/api/shuxing_value/queryAll?pid="+this.shuxingData[i].id+"").then(res=>{
+                   this.shuxingData[i].values=res.data.data;
+                   this.shuxingData1.push(this.shuxingData[i])
+                 }).catch(err=>console.log(err));
+               }else{
+                 this.shuxingData1.push(this.shuxingData[i])
+               }
+             }else if(this.shuxingData[i].isSKU==0){
+               if(this.shuxingData[i].type!=3){
+                 this.$axios.get("http://192.168.1.43:8080/api/shuxing_value/queryAll?pid="+this.shuxingData[i].id+"").then(res=>{
+                   this.shuxingData[i].values=res.data.data;
+                   this.shuxingData2.push(this.shuxingData[i])
+                 }).catch(err=>console.log(err));
+               }else{
+                 this.shuxingData2.push(this.shuxingData[i])
+               }
+
              }
           }
-
+          console.log(this.shuxingData2)
         }).catch(err=>console.log(err));
-      }
+      },
     },created:function () {
       this.querytype()
     },watch:{
       shopTypeForm:{
         handler:function(val,oldval){
-        this.queryShuXing(val.typeId)
-          console.log(val.id)
-          console.log(this.shuxingData1)
+
+          console.log("-------------------------------")
+          this.queryShuXing(val.typeId)
         },
         deep:true//对象内部的属性监听，也叫深度监听
       }
