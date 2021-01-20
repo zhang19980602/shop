@@ -71,20 +71,32 @@
           </el-form-item>
         </el-form-item>
 
-        <table  v-if="tableShow" border="1" >
-          <!--表头-->
-          <tr>
-            <th  v-for=" a in shuxingData1">{{a.nameCH}}</th>
-            <th>库存</th>
-            <th>价格</th>
-          </tr>
-          <!--表数据-->
-          <tr  v-for="a in dkej">
-            <td v-for="b in a">{{b}}</td>
-            <td ><input></td>
-            <td ><input></td>
-          </tr>
-        </table>
+
+        <el-table
+          v-if="tableShow"
+          :data="tableData"
+          style="width: 100%">
+
+          <el-table-column v-for="c in cols" :key="c.id" :label="c.nameCH" :prop="c.name">
+          </el-table-column>
+
+          <el-table-column
+            label="库存"
+            width="180">
+
+            <template slot-scope="scope">
+              <el-input/>
+            </template>
+
+          </el-table-column>
+          <el-table-column
+            label="价格"
+            width="180">
+            <template slot-scope="scope">
+              <el-input/>
+            </template>
+          </el-table-column>
+        </el-table>
 
 
 
@@ -141,10 +153,24 @@
         shuxingData2:[],
         shuxingzhiDate:[],
         tableShow:false,
-        dkej:[],
+        cols:[],//表动态列头
+        tableData:[],
+        dkej:""
       };
     },
     methods: {
+      qqq(row){
+
+        var b=[];
+        for (let i = 0; i <this.dkej.length ; i++) {
+          for (let j = 0; j <this.dkej[i].length; j++) {
+           b.push(this.dkej[i][j])
+          }
+        }
+
+          return b
+
+      },
       discarts:function() {
         //笛卡尔积
         var twodDscartes = function (a, b) {
@@ -181,10 +207,19 @@
       }
       ,
       skuChange(){
+        //清空动态列头
+        this.cols=[];
+        this.tableData=[];
+
+        //声明笛卡尔积的参数
+        let arr=[];
         //判断是否要生成笛卡尔积
         let flag=true;
-        var arr=[];
         for (let i = 0; i <this.shuxingData1.length ; i++) {
+          //添加动态列头名称
+          this.cols.push({"id":this.shuxingData1[i].id,"nameCH":this.shuxingData1[i].nameCH,"name":this.shuxingData1[i].name});
+          //添加笛卡尔积参数
+          //判断当前sku属性 是否被选中
           if(this.shuxingData1[i].cks.length==0){
             flag=false;
             break;
@@ -195,6 +230,21 @@
             arr.push(this.shuxingData1[i].cks)
           }
           this.dkej=this.discarts(arr);
+          let res=this.discarts(arr);
+
+          //遍历结果集   ["","",""]
+          for (let i = 0; i <res.length ; i++) {
+            //得到数据
+            let valuesAttr=res[i];
+            let  tableValue={};
+            for (let j = 0; j < valuesAttr.length; j++) {
+              let key=this.cols[j].name;
+              tableValue[key]=valuesAttr[j];
+            }
+            this.tableData.push(tableValue);
+
+          }
+
           console.log(this.dkej)
         }
         this.tableShow=flag;
@@ -272,13 +322,13 @@
           }
           console.log(this.shuxingData2)
         }).catch(err=>console.log(err));
-      },
+      }
     },created:function () {
       this.querytype()
     },watch:{
       shopTypeForm:{
         handler:function(val,oldval){
-
+          this.tableShow=false
           console.log("-------------------------------")
           this.queryShuXing(val.typeId)
         },
