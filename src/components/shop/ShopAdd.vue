@@ -46,6 +46,19 @@
         <el-form-item label="商品排序">
           <el-input v-model="shopAddForm.sortNum"></el-input>
         </el-form-item>
+        <el-form-item label="图片" prop="imgpath">
+          <div> <img :src="shopAddForm.imgPath" width="80"></div>
+          <el-upload
+            class="upload-demo"
+            action="http://192.168.1.43:8080/api/pinpai/upload"
+            :on-success="imgCallBack"
+            name="img"
+            list-type="picture">
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+          </el-upload>
+        </el-form-item>
+
       </el-form>
     </div>
     <div>
@@ -71,7 +84,6 @@
           </el-form-item>
         </el-form-item>
 
-
         <el-table
           v-if="tableShow"
           :data="tableData"
@@ -85,7 +97,7 @@
             width="180">
 
             <template slot-scope="scope">
-              <el-input/>
+              <el-input v-model="scope.row.kucun"/>
             </template>
 
           </el-table-column>
@@ -93,7 +105,7 @@
             label="价格"
             width="180">
             <template slot-scope="scope">
-              <el-input/>
+              <el-input v-model="scope.row.price"/>
             </template>
           </el-table-column>
         </el-table>
@@ -101,27 +113,28 @@
 
 
 
+
         <el-form-item label="商品参数" v-if="shuxingData2.length>0" >
           <el-form-item v-for="a  in shuxingData2" :key="a.id" :label="a.nameCH">
             <!--下拉框-->
-            <el-select  v-if="a.type==0" placeholder="请选择" v-model="xialai">
-              <el-option v-for="b in a.values" :key="b.id"  :label="b.valueCH" :value="b.id"></el-option>
+            <el-select  v-if="a.type==0"  placeholder="请选择" v-model="a.cks1">
+              <el-option v-for="b in a.values" :key="b.id"  :label="b.valueCH" :value="b.valueCH"></el-option>
             </el-select>
             <!--单选框-->
-            <el-radio-group v-if="a.type==1" v-model="danxuan">
+            <el-radio-group v-if="a.type==1" v-model="a.cks1">
               <el-radio-button v-for="b in a.values" :key="b.id" :label="b.valueCH"></el-radio-button>
             </el-radio-group>
             <!--复选框-->
-            <el-checkbox-group v-if="a.type==2" v-model="aa">
+            <el-checkbox-group v-if="a.type==2" v-model="a.cks1">
               <el-checkbox-button v-for="b in a.values" :key="b.id" :label="b.valueCH" name="type"></el-checkbox-button>
             </el-checkbox-group>
             <!--输入框-->
             <div v-if="a.type==3">
-            <el-input ></el-input>
+            <el-input v-model="a.cks1" ></el-input>
           </div>
-
           </el-form-item>
         </el-form-item>
+        <el-button style="margin-top: 12px;" @click="tijiao()">提交</el-button>
       </el-form>
     </div>
     <el-button style="margin-top: 12px;" v-if="active!=0" @click="after">上一步</el-button>
@@ -154,22 +167,51 @@
         shuxingzhiDate:[],
         tableShow:false,
         cols:[],//表动态列头
-        tableData:[],
-        dkej:""
+        tableData:[]
       };
     },
     methods: {
-      qqq(row){
+      tijiao() {
+        this.shopAddForm.typeId=this.shopTypeForm.typeId
+        //商品的新增
+        var add1=this.$qs.stringify(this.shopAddForm)
+        this.$axios.post("http://192.168.1.43:8080/api/shop/add",add1).then(res=>{
 
-        var b=[];
-        for (let i = 0; i <this.dkej.length ; i++) {
-          for (let j = 0; j <this.dkej[i].length; j++) {
-           b.push(this.dkej[i][j])
-          }
+        }).catch(err=>console.log(err));
+
+        //非SKU
+       for (let i = 0; i <this.shuxingData2.length; i++) {
+         let arr=this.shuxingData2[i].name
+         console.log(arr)
+         let arr1=this.shuxingData2[i].cks1;
+         let ass='{'+'"'+arr+'"'+':'+'"'+arr1+'"'+'}'
+         let saveAddvalues={proId:this.shopTypeForm.typeId,attrData:ass}
+         let add= this.$qs.stringify(saveAddvalues);
+         this.$axios.post("http://192.168.1.43:8080/api/shop/addvalue",add).then(res=>{
+
+         }).catch(err=>console.log(err));
+          console.log(ass)
+        }
+        //SKU
+        for (let i = 0; i <this.tableData.length; i++) {
+          let saveAddvalues={proId:this.shopTypeForm.typeId,price:this.tableData[i].price,storcks:this.tableData[i].kucun}
+          delete this.tableData[i].price
+          delete this.tableData[i].kucun
+          saveAddvalues.attrData=JSON.stringify(this.tableData[i]);
+          let add= this.$qs.stringify(saveAddvalues);
+          console.log(JSON.stringify(this.tableData[i]))
+         this.$axios.post("http://192.168.1.43:8080/api/shop/addvalue",add).then(res=>{
+
+          }).catch(err=>console.log(err));
         }
 
-          return b
 
+      },
+      /*图片上传*/
+      imgCallBack:function(response, file, fileList){ //图片上传的回调函数
+        // 赋值
+        console.log(response)
+        this.shopAddForm.imgpath=response.data;
       },
       discarts:function() {
         //笛卡尔积
@@ -229,7 +271,6 @@
           for (let i = 0; i <this.shuxingData1.length; i++) {
             arr.push(this.shuxingData1[i].cks)
           }
-          this.dkej=this.discarts(arr);
           let res=this.discarts(arr);
 
           //遍历结果集   ["","",""]
@@ -240,12 +281,10 @@
             for (let j = 0; j < valuesAttr.length; j++) {
               let key=this.cols[j].name;
               tableValue[key]=valuesAttr[j];
+              console.log(key);
             }
             this.tableData.push(tableValue);
-
           }
-
-          console.log(this.dkej)
         }
         this.tableShow=flag;
       },
@@ -310,11 +349,14 @@
                if(shuxingData[i].type!=3){
                  this.$axios.get("http://192.168.1.43:8080/api/shuxing_value/queryAll?pid="+shuxingData[i].id+"").then(res=>{
                    shuxingData[i].values=res.data.data;
-                   shuxingData[i].cks=[];
+                   shuxingData[i].cks1="";
+                   if(shuxingData[i].type==2){
+                     shuxingData[i].cks1=[];
+                   }
                    this.shuxingData2.push(shuxingData[i])
                  }).catch(err=>console.log(err));
                }else{
-                 shuxingData[i].cks=[];
+                 shuxingData[i].cks1="";
                  this.shuxingData2.push(shuxingData[i])
                }
 
@@ -322,8 +364,15 @@
           }
           console.log(this.shuxingData2)
         }).catch(err=>console.log(err));
+      },
+      pinpai(){
+        this.$axios.get("http://192.168.1.43:8080/api/pinpai/queryAll?limit="+1000+"&page="+1+"&name="+""+"").then(res=>{
+          console.log(res)
+        this.bandData=res.data.data;
+        }).catch(err=>console.log(err));
       }
     },created:function () {
+      this.pinpai()
       this.querytype()
     },watch:{
       shopTypeForm:{
