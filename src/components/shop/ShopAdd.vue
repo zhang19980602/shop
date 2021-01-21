@@ -134,7 +134,7 @@
           </div>
           </el-form-item>
         </el-form-item>
-        <el-button style="margin-top: 12px;" @click="tijiao()">提交</el-button>
+        <el-button v-if="tableShow" style="margin-top: 12px;" @click="tijiao()">提交</el-button>
       </el-form>
     </div>
     <el-button style="margin-top: 12px;" v-if="active!=0" @click="after">上一步</el-button>
@@ -171,47 +171,38 @@
       };
     },
     methods: {
-      tijiao() {
-        this.shopAddForm.typeId=this.shopTypeForm.typeId
-        //商品的新增
-        var add1=this.$qs.stringify(this.shopAddForm)
-        this.$axios.post("http://192.168.1.43:8080/api/shop/add",add1).then(res=>{
-
-        }).catch(err=>console.log(err));
-
+      tijiao(){
         //非SKU
-       for (let i = 0; i <this.shuxingData2.length; i++) {
-         let arr=this.shuxingData2[i].name
-         console.log(arr)
-         let arr1=this.shuxingData2[i].cks1;
-         let ass='{'+'"'+arr+'"'+':'+'"'+arr1+'"'+'}'
-         let saveAddvalues={proId:this.shopTypeForm.typeId,attrData:ass}
-         let add= this.$qs.stringify(saveAddvalues);
-         this.$axios.post("http://192.168.1.43:8080/api/shop/addvalue",add).then(res=>{
-
-         }).catch(err=>console.log(err));
-          console.log(ass)
+        let list=[];
+        for (let i = 0; i <this.shuxingData2.length; i++) {
+          let arr=this.shuxingData2[i].name
+          let arr1=this.shuxingData2[i].cks1;
+          let ass='{'+'"'+arr+'"'+':'+'"'+arr1+'"'+'}'
+          let saveAddvalues={proId:this.shopTypeForm.typeId,attrData:ass}
+          list.push(saveAddvalues)
         }
         //SKU
         for (let i = 0; i <this.tableData.length; i++) {
           let saveAddvalues={proId:this.shopTypeForm.typeId,price:this.tableData[i].price,storcks:this.tableData[i].kucun}
-          delete this.tableData[i].price
-          delete this.tableData[i].kucun
+          delete this.tableData[i].price;
+          delete this.tableData[i].kucun;
           saveAddvalues.attrData=JSON.stringify(this.tableData[i]);
-          let add= this.$qs.stringify(saveAddvalues);
-          console.log(JSON.stringify(this.tableData[i]))
-         this.$axios.post("http://192.168.1.43:8080/api/shop/addvalue",add).then(res=>{
-
-          }).catch(err=>console.log(err));
+          list.push(saveAddvalues)
         }
-
-
+        this.shopAddForm.typeId=this.shopTypeForm.typeId
+        this.shopAddForm.attrData=JSON.stringify(list)
+        var add1=this.$qs.stringify(this.shopAddForm)
+        console.log(JSON.stringify(list))
+       this.$axios.post("http://192.168.1.43:8080/api/shop/add",add1).then(res=>{
+            console.log("成功")
+            console.log(res)
+        }).catch(err=>console.log(err));
       },
       /*图片上传*/
       imgCallBack:function(response, file, fileList){ //图片上传的回调函数
         // 赋值
         console.log(response)
-        this.shopAddForm.imgpath=response.data;
+        this.shopAddForm.imgPath=response.data;
       },
       discarts:function() {
         //笛卡尔积
