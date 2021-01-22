@@ -159,7 +159,7 @@
           <el-form-item label="商品规格" v-if="shuxingData1.length>0">
             <el-form-item v-for="a in shuxingData1" :key="a.id" :label="a.nameCH">
               <!--复选框-->
-             <el-checkbox-group v-if="a.type==2" v-model="a.cks" @change="skuChange">
+             <el-checkbox-group v-if="a.type==2" v-model="a.cks" @change="skuChange1">
                 <el-checkbox-button v-for="b in a.values" :key="b.id" :label="b.valueCH"></el-checkbox-button>
               </el-checkbox-group>
             </el-form-item>
@@ -286,7 +286,7 @@
             saveAddvalues.attrData=JSON.stringify(this.tableData[i]);
             list.push(saveAddvalues)
           }
-          var add1={attr:JSON.stringify(list),typeId:this.proId}
+          var add1={attr:JSON.stringify(list),id:this.proId,typeId:this.shopTypeForm.typeId}
          var add=this.$qs.stringify(add1)
           console.log(JSON.stringify(list))
          this.$axios.post("http://192.168.1.43:8080/api/shop/updateShopvalues",add).then(res=>{
@@ -295,6 +295,7 @@
              message: '修改成功!'
            });
             this.TypeFlag=false
+           this.queryShopData(1)
           }).catch(err=>console.log(err));
 
         },
@@ -320,7 +321,7 @@
             for (let i = 0; i <this.shuxingData1.length; i++) {
               let arr1=[];
              for (let j = 0; j <this.shuxingData1[i].cks.length; j++) {
-                       if(arr1.indexOf(this.shuxingData1[i].cks[j])){
+                       if(arr1.indexOf(this.shuxingData1[i].cks[j])==-1){
                          arr1.push(this.shuxingData1[i].cks[j])
                        }
               }
@@ -338,7 +339,6 @@
                 let key=this.cols[j].name;
                 tableValue[key]=valuesAttr[j];
               }
-
                 tableValue.price=SKU[i].price
                 tableValue.kucun=SKU[i].storcks
               this.tableData.push(tableValue);
@@ -366,7 +366,7 @@
           this.shuxingData2=[];
           let SKUshuxing=[]
           let SKU=[]
-          let feiSKU={}
+          let feiSKU=[]
           $.get({
             url:"http://192.168.1.43:8080/api/shop/queryByTypeId",
             data:{typeId:id},
@@ -379,7 +379,7 @@
                   SKU.push(res.data[i]);
                   SKUshuxing.push(JSON.parse(res.data[i].attrData))
                 }else{
-                  feiSKU=JSON.parse(res.data[i].attrData);
+                  feiSKU.push(JSON.parse(res.data[i].attrData));
                 }
               }
             }
@@ -391,7 +391,9 @@
               if(shopValues[i].isSKU==1){
                 shopValues[i].cks=[];
                 for (let j = 0; j <SKUshuxing.length ; j++) {
-                  shopValues[i].cks.push(SKUshuxing[j][shopValues[i].name])
+                  if(shopValues[i].cks.indexOf(SKUshuxing[j][shopValues[i].name])==-1){
+                    shopValues[i].cks.push(SKUshuxing[j][shopValues[i].name])
+                  }
                 }
 
                $.get({
@@ -405,8 +407,11 @@
                })
                 this.shuxingData1.push(shopValues[i])
               }else if(shopValues[i].isSKU==0){
-                shopValues[i].cks1="";
-                shopValues[i].cks1=feiSKU[shopValues[i].name]
+                  shopValues[i].cks1="";
+                for (let j = 0; j <feiSKU.length ; j++) {
+                  shopValues[i].cks1=feiSKU[j][shopValues[i].name]
+                  console.log(feiSKU[j][shopValues[i].name])
+                }
                 $.get({
                   url:"http://192.168.1.43:8080/api/shuxing_value/queryAll",
                   data:{pid:shopValues[i].id},
@@ -579,6 +584,48 @@
           // 赋值
           this.shopAddForm.imgPath=response.data;
         },
+        skuChange1(){
+          //清空动态列头
+          this.cols=[];
+          this.tableData=[];
+
+          //声明笛卡尔积的参数
+          let arr=[];
+          //判断是否要生成笛卡尔积
+          let flag=true;
+          for (let i = 0; i <this.shuxingData1.length ; i++) {
+            //添加动态列头名称
+            this.cols.push({"id":this.shuxingData1[i].id,"nameCH":this.shuxingData1[i].nameCH,"name":this.shuxingData1[i].name});
+            //添加笛卡尔积参数
+            //判断当前sku属性 是否被选中
+            if(this.shuxingData1[i].cks.length==0){
+              flag=false;
+              break;
+            }
+          }
+          if(flag==true){
+            for (let i = 0; i <this.shuxingData1.length; i++) {
+              arr.push(this.shuxingData1[i].cks)
+            }
+            let res=this.discarts(arr);
+
+            //遍历结果集   ["","",""]
+            for (let i = 0; i <res.length ; i++) {
+              //得到数据
+              let valuesAttr=res[i];
+              let  tableValue={};
+              for (let j = 0; j < valuesAttr.length; j++) {
+                let key=this.cols[j].name;
+                tableValue[key]=valuesAttr[j];
+                console.log(key);
+              }
+              this.tableData.push(tableValue);
+            }
+          }
+          this.tableShow=flag;
+        }
+
+
       },
       created:function () {
         this.queryType();
