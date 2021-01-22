@@ -407,24 +407,28 @@
                })
                 this.shuxingData1.push(shopValues[i])
               }else if(shopValues[i].isSKU==0){
-                  shopValues[i].cks1="";
-                for (let j = 0; j <feiSKU.length ; j++) {
-                  shopValues[i].cks1=feiSKU[j][shopValues[i].name]
-                  console.log(feiSKU[j][shopValues[i].name])
-                }
                 $.get({
                   url:"http://192.168.1.43:8080/api/shuxing_value/queryAll",
                   data:{pid:shopValues[i].id},
                   async:false,
                   success:function(res){
                     shopValues[i].values=res.data;
+                    shopValues[i].cks1=""
                   }
                 })
                 this.shuxingData2.push(shopValues[i])
+                console.log(this.shuxingData2)
+                let hh=""
+               for (let j = 0; j <feiSKU.length ; j++) {
+                  if(feiSKU[j][shopValues[i].name]!=undefined){
+                      hh=feiSKU[j][shopValues[i].name]
+                      this.shuxingData2[j].cks1=hh
+                  }
+
+                }
               }
             }
             this.skuChange(SKU)
-            console.log(SKU)
           }).catch(err=>console.log(err))
 
         },
