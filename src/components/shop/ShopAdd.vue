@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div align="center">
+  <div class="container" style="width:800px" >
     <el-steps :active="active" finish-status="success">
       <el-step title="填写商品信息">
       </el-step>
@@ -61,6 +62,7 @@
 
       </el-form>
     </div>
+
     <div>
       <el-form  v-model="shopTypeForm" label-width="80px" v-if="active==1?shopTypeFormflag=true:shopTypeFormflag=false">
         <el-form-item label="属性类型">
@@ -139,6 +141,7 @@
     </div>
     <el-button style="margin-top: 12px;" v-if="active!=0" @click="after">上一步</el-button>
     <el-button style="margin-top: 12px;" @click="next">下一步</el-button>
+  </div>
   </div>
 </template>
 
@@ -328,6 +331,7 @@
              if(shuxingData[i].isSKU==1){
                if(shuxingData[i].type!=3){
                  this.$axios.get("http://192.168.1.43:8080/api/shuxing_value/queryAll?pid="+shuxingData[i].id+"").then(res=>{
+                   console.log(res.data.data)
                    shuxingData[i].values=res.data.data;
                    shuxingData[i].cks=[];
                    this.shuxingData1.push(shuxingData[i])
@@ -340,6 +344,7 @@
                if(shuxingData[i].type!=3){
                  this.$axios.get("http://192.168.1.43:8080/api/shuxing_value/queryAll?pid="+shuxingData[i].id+"").then(res=>{
                    shuxingData[i].values=res.data.data;
+                   console.log(shuxingData[i].values)
                    shuxingData[i].cks1="";
                    if(shuxingData[i].type==2){
                      shuxingData[i].cks1=[];
@@ -379,5 +384,32 @@
 </script>
 
 <style scoped>
+  .handle-box {
+    margin-bottom: 20px;
+  }
 
+  .handle-select {
+    width: 120px;
+  }
+
+  .handle-input {
+    width: 300px;
+    display: inline-block;
+  }
+  .table {
+    width: 100%;
+    font-size: 14px;
+  }
+  .red {
+    color: #00ffff;
+  }
+  .mr10 {
+    margin-right: 10px;
+  }
+  .table-td-thumb {
+    display: block;
+    margin: auto;
+    width: 40px;
+    height: 40px;
+  }
 </style>

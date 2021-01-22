@@ -1,12 +1,21 @@
 <template>
 
-  <el-button @click="dianji()"> 点击</el-button>
+  <el-button @click="dianji1()"> 点击</el-button>
 </template>
 
 <script>
     export default {
 
       methods:{
+        dianji1(){
+
+          let aa=[{id:1,name:"hhh"},{id:2,name:33}]
+          let bb={"hhh":"删除"}
+          for (let i = 0; i <aa.length; i++) {
+            let cc=aa[i].name
+            console.log(bb.dd)
+          }
+        },
         dianji:function(){
           var arr=["鸿蒙","shanchu"]
           var arr1=["128GB","111"]
