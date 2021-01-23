@@ -156,7 +156,7 @@
         </el-option>
       </el-select>
 
-          <el-form-item label="商品规格" v-if="shuxingData1.length>0">
+          <el-form-item label="商品规格" v-if="shuxingData1.length>0"><br>
             <el-form-item v-for="a in shuxingData1" :key="a.id" :label="a.nameCH">
               <!--复选框-->
              <el-checkbox-group v-if="a.type==2" v-model="a.cks" @change="skuChange1">
